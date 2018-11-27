@@ -4,7 +4,7 @@ Below is a quick summary of usage.
 
 Installation
 ============
-Run ``pip install django-makalu``.
+Run ``pip install django-makalu``. (Not ready yet. Alternatively add the folder ``makalu`` to your django project.)
 
 Add ``makalu`` to your ``INSTALLED_APPS`` setting:
 
