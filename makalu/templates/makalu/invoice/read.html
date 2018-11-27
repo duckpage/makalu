@@ -1,0 +1,153 @@
+{% extends 'base.html' %} 
+{% load i18n %}
+{% block content %}
+<div class="row">
+    {% if messages %}
+    <div class="col-lg-12 mt-4">
+        {% for message in messages %}
+        <div class="alert alert-dismissible alert-{{ message.tags }}">
+            <button type="button" class="close" data-dismiss="alert">&times;</button>
+            <p class="mb-0">{{ message }}</p>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    <div class="col-lg-12">
+        <h1 class="mt-4 mb-4">
+            Fattura {{ invoice.number }}
+        </h1>
+
+        <div class="row pb-4">
+            <div class="col-lg-12">
+                <table class="table table-bordered mt-3">
+                    <thead class="thead-light">
+                        <tr>
+                            <th scope="col">Stato</th>
+                            <th scope="col">Data Emissione</th>
+                            <th scope="col">Utente</th>
+                            <th scope="col">{% if invoice.status == 0 %}Data Trasmissione{% endif %}</th>
+                            <th scope="col"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><i class="fas fa-circle {% if invoice.status == 0 %}text-success{% else %}text-warning{% endif %}"></i> {% if invoice.status == 0 %}Trasmessa{% else %}Da trasmettere{% endif %}</td>
+                            <td>{{ invoice.date }}</td>
+                            <td>
+                                <a href="{% url 'makalu:user-read' invoice.user.username %}">
+                                    {% if invoice.user.first_name %}
+                                        {{ invoice.user.first_name }} {{ invoice.user.last_name }}
+                                    {% else %}
+                                        {{ invoice.user.fiscal_code }} ({{ invoice.user.username }})
+                                    {% endif %}
+                                </a>
+                            </td>
+                            <td>
+                                {% if invoice.status == 0 %}
+                                    {{ invoice.transmission_date }}
+                                {% else %}
+                                    <a href="" data-toggle="modal" data-target="#modal-transmit" data-code="{{ invoice.uuid }}"><i class="fas fa-shipping-fast"></i></a>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a href="{% url 'makalu:invoice-print' invoice.uuid %}"><i class="fas fa-file-pdf"></i></a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+
+        <form action="{% url 'makalu:invoice-read' invoice.uuid %}" method="POST">{% csrf_token %}
+            <div class="card border-light mb-3">
+                <div class="card-header"><h4>Dati Fattura</h4></div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="form-group col-lg-6">
+                            <label class="col-form-label col-form-label-lg" for="number">Numero</label>
+                            <input class="form-control form-control-lg" name="{{ form.number.html_name }}" placeholder="Es. 12" id="number" type="text" value="{{ invoice.number }}" {% if invoice.status  == 0 %}readonly{% endif %}>
+                        </div>
+                        <div class="form-group col-lg-6">
+                            <label class="col-form-label col-form-label-lg" for="number">Data</label>
+                            <input class="form-control form-control-lg" name="{{ form.date.html_name }}" placeholder="Es. 12/12/2012" id="number" value="{{ invoice.date|date:"SHORT_DATE_FORMAT" }}" type="text" {% if invoice.status  == 0 %}readonly{% endif %}>
+                        </div>        
+                    </div>
+                </div>
+            </div>
+
+            <div class="card border-light mb-3">
+                <div class="card-header"><h4>Cliente</h4></div>
+                <div class="card-body">
+                    <div class="form-group">
+                        <div class="row">
+                            <div class="col-lg-10 py-2">
+                                <select class="custom-select form-control-lg" {% if invoice.status  == 0 %}disabled{% endif %} name="{{ form.company.html_name }}">
+                                    {% for item in customers %}
+                                    <option value="{{ item.uuid }}" {% if invoice.commissioned.uuid == item.uuid %}selected=""{% endif %}>{{ item.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-lg-2 py-2">
+                                <a class="btn btn-secondary btn-lg text-white {% if invoice.status == 0 %}disabled{% endif %}" href="{% url 'makalu:company-create' %}">Nuovo Cliente</a>
+                            </div>
+                        </div>
+                    </div>      
+                </div>
+            </div>
+
+            <div class="card border-light mb-3">
+                <div class="card-header"><h4>Articoli</h4></div>
+                <div class="card-body">
+                    <a class="btn btn-secondary btn-lg text-white float-right {% if invoice.status == 0 %}disabled{% endif %}" href="" data-toggle="modal" data-target="#modal-article">Aggiungi</a>
+                    <div class="clearfix"></div>
+                    
+                    <table class="table mt-4 dynamic__area {% if not invoice.rows %}d-none{% endif %}" data-type="invoicerows">
+                        <thead class="thead-dark">
+                            <tr>
+                                <th scope="col">N.</th>
+                                <th scope="col">Descrizione</th>
+                                <th scope="col">Quanita</th>
+                                <th scope="col">Prezzo unitario</th>
+                                <th scope="col">Imposte</th>
+                                <th scope="col">Totale</th>
+                                <th scope="col"></th>
+                            </tr>
+                        </thead>
+                        <tbody class="dynamic__container" data-type="invoicerows">
+                            {% for item in invoice.rows %}
+                            <tr class="dynamic__item" data-code="{{ item.uuid }}" data-type="invoicerows">
+                                <td>{{ item.number }}</td>
+                                <td>{{ item.description }}</td>
+                                <td>{{ item.quantity }}</td>
+                                <td>{{ item.unit_price }}</td>
+                                <td>{{ item.tax_rate }}</td>
+                                <td>{{ item.total_price }}</td>
+                                <td>
+                                    <a href="" class="btn btn-link text-danger float-right" data-toggle="modal" data-target="#modal-delete" data-message="{% trans 'Sei sicuro di voler eliminare la riga' %} {{ item.number }}?"
+                                    data-url="{% url 'makalu:invoice-row-delete' invoice.uuid %}" data-code="{{ item.uuid }}"><i class="fas fa-trash"></i></a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    
+                    <div class="alert alert-dismissible alert-light mt-4 dynamic__alert {% if invoice.rows %}d-none{% endif %}" data-type="invoicerows">
+                        Non ci sono ancora artcoili.
+                    </div>
+                    
+                </div>
+            </div>
+            <div class="row mb-4">
+                <div class="col-lg-12">
+                    <button type="submit" class="btn btn-primary btn-lg text-white float-right">Salva</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+{% include 'makalu/snippets/modal-article.html' %}
+{% include 'makalu/snippets/modal-delete.html' %}
+{% endblock %}

@@ -1,0 +1,98 @@
+{% extends 'base.html' %} {% load i18n static %} {% block content %}
+<div class="row mt-5">
+    {% if messages %}
+    <div class="col-lg-12 mt-4">
+        {% for message in messages %}
+        <div class="alert alert-dismissible alert-{{ message.tags }}">
+            <button type="button" class="close" data-dismiss="alert">&times;</button>
+            <p class="mb-0">{{ message }}</p>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    <div class="col-lg-12 mb-4">
+
+        <form action="{% if invoiceuser %}{% url 'makalu:user-read' invoiceuser.username %}{% else %}{% url 'makalu:user-create' %}{% endif %}" method="POST" enctype="multipart/form-data">{% csrf_token %}
+            <div class="row">
+                <div class="col-lg-2">
+                    <img class="img-circle" src="{% if invoiceuser.avatar %}{{ invoiceuser.avatar.url }}{% else %}{% static 'makalu/img/avatar-empty.png' %}{% endif %}" height="100" />
+                </div>
+                <div class="col-lg-10">
+                    <h4>
+                        {% if invoiceuser %} {{ invoiceuser.first_name }} {{ invoiceuser.last_name }} {% else %} {% trans 'Nuovo utente' %} {% endif %}
+                    </h4>
+                    <div class="row">
+                        <div class="col-sm-6 form-group">
+                            <label class="col-form-label col-form-label-lg">{% trans 'Nome' %}:</label>
+                            <input class="form-control form-control-lg" type="text" name="{{ form.first_name.html_name }}" 
+                            {% if form.first_name.errors%} class="error" {% endif %} 
+                            {% if invoiceuser.first_name %} value="{{ invoiceuser.first_name }}" {% elif form.first_name.value %} value="{{ form.first_name.value }}" {% endif %}/>
+                        </div>
+                        <div class="col-sm-6 form-group">
+                            <label class="col-form-label col-form-label-lg">{% trans 'Cognome' %}:</label>
+                            <input class="form-control form-control-lg" type="text" name="{{ form.last_name.html_name }}" 
+                            {% if form.last_name.errors%}class="error" {% endif %} 
+                            {% if invoiceuser.last_name %} value="{{ invoiceuser.last_name }}" {% elif form.last_name.value %}value="{{ form.first_name.value }}" {% endif %}/>
+                        </div>
+                        <div class="col-sm-6 form-group">
+                            <label class="col-form-label col-form-label-lg">{% trans 'Username' %}:</label>
+                            <input class="form-control form-control-lg" type="text" name="{{ form.username.html_name }}" 
+                            {% if form.first_name.errors%}class="error" {% endif %} 
+                            {% if invoiceuser.username %} value="{{ invoiceuser.username }}" {% endif %} 
+                            {% if invoiceuser %} readonly {% endif %} />
+                        </div>
+                        <div class="col-sm-6 form-group">
+                            <label class="col-form-label col-form-label-lg">{% trans 'E-Mail' %}:</label>
+                            <input class="form-control form-control-lg" type="text" name="{{ form.email.html_name }}" 
+                            {% if form.email.errors%}class="error" {% endif %} 
+                            {% if invoiceuser.email %} value="{{ invoiceuser.email }}" {% elif form.email.value %} value="{{ form.email.value }}" {% endif %}/>
+                        </div>
+                        <div class="col-sm-6 form-group">
+                            <label class="col-form-label col-form-label-lg">{% trans 'Codice Fiscale' %}:</label>
+                            <input class="form-control form-control-lg" type="text" name="{{ form.fiscal_code.html_name }}" 
+                            {% if form.fiscal_code.errors%}class="error" {% endif %} 
+                            {% if invoiceuser.fiscal_code %} value="{{ invoiceuser.fiscal_code }}" {% elif form.fiscal_code.value %} value="{{ form.fiscal_code.value }}" {% endif %}/>
+                        </div>
+                        <div class="col-sm-6 form-group">
+                            <div class="custom-control custom-checkbox">
+                                <input class="custom-control-input" id="customCheck2" type="checkbox" {% if invoiceuser.is_staff %}checked{% endif %}>
+                                <label class="custom-control-label" for="customCheck2">{% trans 'Utente Amministratore' %}</label>
+                            </div>
+                        </div>
+
+                        
+                        <div class="col-sm-6 form-group">
+                                {% include "makalu/snippets/password.html" %}
+
+                                <div class="alert alert-success password-success-box d-none mt-2">
+                                    {% trans "La tua password è sicura è abbastanza complessa!" %}
+                                </div>
+                            
+                        </div>
+                        
+                        <div class="col-sm-6 form-group">
+                            <label for="{{ form.avatar.id_for_label }}">Avatar</label>
+                            <input class="form-control-file" id="{{ form.avatar.id_for_label }}" type="file" name="{{ form.avatar.html_name }}">
+                        </div>
+
+
+                        <div class="clearfix"></div>
+
+                        <div class="col-sm-12 mar-20-0 text-right">
+                            <button class="btn btn-primary btn-lg" type="submit"  data-mode='password' {% if not invoiceuser %} disabled {% endif %}>
+                                {% if invoiceuser %}{% trans 'Aggiorna' %}{% else %}{% trans 'Salva' %}{% endif %}
+                            </button>
+                        </div>
+                    </div>
+
+                    {% if error %}
+                    <div class="alert alert-danger">
+                        {% blocktrans %}Attenzione! C'è un errore nei dati inseriti.{% endblocktrans %}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </form>
+     </div>
+</div>
+{% endblock %}
