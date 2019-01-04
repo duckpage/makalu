@@ -4,17 +4,28 @@ Below is a quick summary of usage.
 
 Installation
 ============
-Run ``pip install django-makalu``. (Not ready yet. Alternatively add the folder ``makalu`` to your django project.)
+Add the folder ``makalu`` to your django project.
 
 Add ``makalu`` to your ``INSTALLED_APPS`` setting:
 
     INSTALLED_APPS = (
         ...
         'makalu',
-    )
+    ) 
 
-Add ``AUTH_USER_MODEL = 'makalu.InvoiceUser'`` at the end of the setting file.
+Add ``'makalu.processors.revenue'`` to TEMPLATES -> OPTIONS in settings.py.
 
 Add ``path('', include('makalu.urls'))`` in to urls.py.
 
 Run ``manage.py migrate makalu``.
+
+Run ``manage.py firstconfiguration``.
+
+Authentication
+===
+If you want to use Django autentications system:
+
+Add ``path('accounts/', include('django.contrib.auth.urls')),`` in to urls.py.
+
+Add ``LOGIN_REDIRECT_URL = '/'`` and ``LOGOUT_REDIRECT_URL = '/'`` to settings.py
+ 

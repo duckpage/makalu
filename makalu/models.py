@@ -1,16 +1,8 @@
-from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import User
 
 from django.db import models
 
 from uuid import uuid4
-
-class InvoiceUser(AbstractUser):
-    fiscal_code = models.CharField(max_length=25)
-    avatar = models.ImageField(upload_to='uploads/users/avatars', blank=True)
-
-    class Meta:
-            app_label = 'makalu'
-
 
 class Company(models.Model):
     uuid = models.UUIDField(default=uuid4, editable=False)
@@ -44,7 +36,7 @@ STATUS
 class Invoice(models.Model):
     uuid = models.UUIDField(default=uuid4, editable=False)
     status = models.IntegerField(default=1)
-    user = models.ForeignKey(InvoiceUser, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     commissioned = models.ForeignKey(Company, on_delete=models.CASCADE, blank=True, null=True)
     number = models.CharField(max_length=25, blank=True, null=True)
     invoice_type = models.CharField(max_length=50, default='TD01')

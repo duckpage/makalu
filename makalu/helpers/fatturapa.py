@@ -1,7 +1,7 @@
 from collections import defaultdict
 from io import BytesIO
 from base64 import b64decode
-from signxml import XMLVerifier
+#from signxml import XMLVerifier
 import xml.etree.ElementTree as ET
 
 from makalu.models import Company

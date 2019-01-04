@@ -1,6 +1,6 @@
 from django.utils.crypto import get_random_string
 
-from makalu.models import InvoiceUser
+from django.contrib.auth.models import User
 
 
 def get_generic_username():
@@ -10,8 +10,8 @@ def get_generic_username():
     while(Empty==True):
         number = number + 1
         try:
-            InvoiceUser.objects.get(username='user'+str(number))
-        except InvoiceUser.DoesNotExist:
+            User.objects.get(username='user'+str(number))
+        except User.DoesNotExist:
             username='user'+str(number)
             Empty = False
 
@@ -20,9 +20,9 @@ def get_generic_username():
 
 def create_or_get_user_from_code(fiscalcode):
     try:
-        return InvoiceUser.objects.get(fiscal_code=fiscalcode)
-    except InvoiceUser.DoesNotExist:
-        user =  InvoiceUser.objects.create_user(
+        return User.objects.get(fiscal_code=fiscalcode)
+    except User.DoesNotExist:
+        user =  User.objects.create_user(
             get_generic_username(),
             None,
             get_random_string(16)

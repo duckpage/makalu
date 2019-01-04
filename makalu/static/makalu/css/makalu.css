@@ -14,7 +14,9 @@ body {
   }
 }
 
-
+.container.content {
+  padding: 100px 0;
+}
 .password-info-box ul {
   list-style: none;
   padding:0;

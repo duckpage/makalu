@@ -1,14 +1,13 @@
 from django.urls import path, include
 
-from makalu.views import invoice, auth, company, user
+from makalu.views import invoice, company, user
 
 app_name = 'makalu'
 
 urlpatterns = [
     path('', invoice.dashboard, name='dashboard'),
 
-
-    path('invoice/', include([
+    path('invoices/', include([
         path('upload', invoice.invoice_upload, name='invoice-upload'),
         path('transmit', invoice.invoice_transmit, name='invoice-transmit'),
         path('create', invoice.invoice_create, name='invoice-create'),
@@ -28,12 +27,6 @@ urlpatterns = [
     ])),
 
     path('users/', include([
-        path('', user.user_list, name='user-list'),
-        path('delete', user.user_delete, name='user-delete'),
-        path('create', user.user_read, name='user-create'),
         path('<str:u>', user.user_read, name='user-read'),
     ])),
-
-    path('login', auth.user_login, name='user-login'),
-    path('logout', auth.user_logout, name='user-logout'),
 ]
