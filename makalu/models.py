@@ -42,7 +42,6 @@ class Invoice(models.Model):
     invoice_type = models.CharField(max_length=50, default='TD01')
     date = models.DateField()
     currency = models.CharField(max_length=5, default='EUR')
-    tax_rate = models.FloatField(blank=True, null=True)
     transmission_country = models.CharField(max_length=5, blank=True, null=True)
     transmission_progressive = models.IntegerField()
     transmission_date = models.DateField(blank=True, null=True)

@@ -221,6 +221,7 @@ def get_fatturapa_xml(fattura):
     ET.SubElement(datigeneralidocumento, 'Numero').text = str(fattura['number'])
     ET.SubElement(datigeneralidocumento, 'ImportoTotaleDocumento').text = float_to_str(fattura['total'] + (fattura['tax_rate'] * fattura['total']) / 100)
 
+    riepilogo = []
     datibeniservizi = ET.SubElement(body, 'DatiBeniServizi')
     for item in fattura['rows']:
         dettagliolinee = ET.SubElement(datibeniservizi, 'DettaglioLinee')
@@ -230,11 +231,31 @@ def get_fatturapa_xml(fattura):
         ET.SubElement(dettagliolinee, 'PrezzoUnitario').text = float_to_str(item.unit_price)
         ET.SubElement(dettagliolinee, 'PrezzoTotale').text = float_to_str(item.total_price)
         ET.SubElement(dettagliolinee, 'AliquotaIVA').text = float_to_str(item.tax_rate)
+
+        rr_added = False
+        for ritem in riepilogo:
+            if ritem['al'] == item.tax_rate:
+                ritem['to'] = ritem['to'] + item.total_price
+                ritem['tx'] = ritem['tx'] + (item.tax_rate * item.total_price / 100)
+                rr_added = True
+               
+        if not riepilogo or not rr_added:
+            riepilogo.append({
+                'al': item.tax_rate,
+                'to': item.total_price,
+                'tx': item.tax_rate
+            })
     
-    datiriepilogo = ET.SubElement(datibeniservizi, 'DatiRiepilogo')
-    ET.SubElement(datiriepilogo, 'AliquotaIVA').text = float_to_str(fattura['tax_rate'])
-    ET.SubElement(datiriepilogo, 'ImponibileImporto').text = float_to_str(fattura['total'])
-    ET.SubElement(datiriepilogo, 'Imposta').text = float_to_str((fattura['tax_rate'] * fattura['total']) / 100)
+    rtotal = 0
+    for ritem in riepilogo:
+        datiriepilogo = ET.SubElement(datibeniservizi, 'DatiRiepilogo')
+        ET.SubElement(datiriepilogo, 'AliquotaIVA').text = float_to_str(ritem['al'])
+        ET.SubElement(datiriepilogo, 'ImponibileImporto').text = float_to_str(ritem['to'])
+        ET.SubElement(datiriepilogo, 'Imposta').text = float_to_str(ritem['tx'])
+
+        rtotal = rtotal + (ritem['to'] + ritem['tx'])
+
+    ET.SubElement(datigeneralidocumento, 'ImportoTotaleDocumento').text = float_to_str(rtotal)
 
 
     tree = ET.ElementTree(root)

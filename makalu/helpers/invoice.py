@@ -50,7 +50,7 @@ def get_invoice_data(invoice):
     invoice_total = 0
     invoice_rows = InvoiceRow.objects.filter(invoice=invoice)
     for invoice_row in invoice_rows:
-        invoice_total = invoice_total + invoice_row.total_price
+        invoice_total = invoice_total + (invoice_row.total_price + (invoice_row.tax_rate * invoice_row.total_price / 100))
 
     return {
         'model': invoice,
@@ -64,7 +64,6 @@ def get_invoice_data(invoice):
         'rows': invoice_rows,
         'invoice_type': invoice.invoice_type,
         'currency': invoice.currency,
-        'tax_rate': invoice.tax_rate,
         'transmission_country': invoice.transmission_country,
         'transmission_date': invoice.transmission_date,
         'transmission_progressive': invoice.transmission_progressive,
