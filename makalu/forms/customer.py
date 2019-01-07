@@ -1,7 +1,9 @@
 from django import forms
 
-class CompanyForm(forms.Form):
-    name = forms.CharField()
+class CustomerForm(forms.Form):
+    legal_name = forms.CharField(required=False)
+    first_name = forms.CharField(required=False)
+    last_name = forms.CharField(required=False)
     fiscal_type = forms.CharField()
     address = forms.CharField()
     address_number = forms.CharField()
@@ -10,6 +12,6 @@ class CompanyForm(forms.Form):
     province = forms.CharField()
     country = forms.CharField()
     fiscal_code = forms.CharField()
-    vat_code = forms.CharField()
-    code = forms.CharField(required=False)
-    pec = forms.EmailField()
+    vat_code = forms.CharField(required=False)
+    code = forms.CharField()
+    pec = forms.EmailField(required=False)

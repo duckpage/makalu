@@ -4,7 +4,7 @@ from django import forms
 class InvocieForm(forms.Form):
     number = forms.CharField()
     date = forms.DateField()
-    company = forms.CharField()
+    customer = forms.CharField()
     
 
 

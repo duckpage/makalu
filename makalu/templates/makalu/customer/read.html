@@ -1,37 +1,39 @@
 {% extends 'makalu-base.html' %} {% load i18n static %} {% block content %}
 <div class="row mt-5">
-    {% if messages %}
-    <div class="col-lg-12 mt-4">
-        {% for message in messages %}
-        <div class="alert alert-dismissible alert-{{ message.tags }}">
-            <button type="button" class="close" data-dismiss="alert">&times;</button>
-            <p class="mb-0">{{ message }}</p>
-        </div>
-        {% endfor %}
-    </div>
-    {% endif %}
     <div class="col-lg-12 mb-4">
-        <form action="{% if company %}{% url 'makalu:company-read' company.uuid %}{% else %}{% url 'makalu:company-create' %}{% endif %}" method="POST" enctype="multipart/form-data">{% csrf_token %}
+        <form action="{% if customer %}{% url 'makalu:customer-read' customer.uuid %}{% else %}{% url 'makalu:customer-create' %}{% endif %}" method="POST" enctype="multipart/form-data">{% csrf_token %}
             <div class="row">
                 <div class="col-lg-2">
-                    <img src="{% static 'makalu/img/company.png' %}" height="100" />
+                    <img src="{% static 'makalu/img/customer.png' %}" height="100" />
                 </div>
                 <div class="col-lg-10">
                     <h4>
-                        {% if company %} {{ company.name }} {% else %} {% trans 'Nuovo Cliente' %} {% endif %}
+                        {% if customer %} {% if customer.legal_name %}{{ customer.legal_name }}{% else %}{{ customer.first_name }} {{ customer.last_name }}{% endif %} {% else %} {% trans 'Nuovo Cliente' %} {% endif %}
                     </h4>
                     <div class="row">
                         <div class="col-sm-6 form-group">
-                            <label class="col-form-label col-form-label-lg">{% trans 'Ragione Sociale' %}:</label>
-                            <input class="form-control form-control-lg" type="text" name="{{ form.name.html_name }}" 
-                            {% if form.name.errors%} class="error" {% endif %} 
-                            {% if company.name %} value="{{ company.name }}" {% elif form.name.value %} value="{{ form.name.value }}" {% endif %}/>
+                            <label class="col-form-label col-form-label-lg">{% trans 'Denominazione' %}:</label>
+                            <input class="form-control form-control-lg" type="text" name="{{ form.legal_name.html_name }}" 
+                            {% if form.legal_name.errors%} class="error" {% endif %} 
+                            {% if customer.legal_name %} value="{{ customer.legal_name }}" {% elif form.legal_name.value %} value="{{ form.legal_name.value }}" {% endif %}/>
+                        </div>
+                        <div class="col-sm-6 form-group">
+                            <label class="col-form-label col-form-label-lg">{% trans 'Nome' %}:</label>
+                            <input class="form-control form-control-lg" type="text" name="{{ form.first_name.html_name }}" 
+                            {% if form.first_name.errors%} class="error" {% endif %} 
+                            {% if customer.firstname %} value="{{ customer.first_name }}" {% elif form.first_name.value %} value="{{ form.first_name.value }}" {% endif %} />
+                        </div>
+                        <div class="col-sm-6 form-group">
+                            <label class="col-form-label col-form-label-lg">{% trans 'Cognome' %}:</label>
+                            <input class="form-control form-control-lg" type="text" name="{{ form.last_name.html_name }}" 
+                            {% if form.last_name.errors%} class="error" {% endif %}
+                            {% if customer.last_name %} value="{{ customer.last_name }}" {% elif form.last_name.value %} value="{{ form.last_name.value }}" {% endif %} />
                         </div>
                         <div class="col-sm-6 form-group">
                             <label class="col-form-label col-form-label-lg">{% trans 'Regime Fiscale' %}:</label>
                             <select class="custom-select form-control-lg" name="{{ form.fiscal_type.html_name }}">
                                 {% for item in fiscaltypes %}
-                                <option value="{{ item.1 }}" {% if company.fiscal_type %}{% if company.fiscal_type == item.1 %}selected=""{% endif %}{% endif %}>{{ item.2 }}</option>
+                                <option value="{{ item.1 }}" {% if customer.fiscal_type %}{% if customer.fiscal_type == item.1 %}selected=""{% endif %}{% endif %}>{{ item.2 }}</option>
                                 {% endfor %}
                             </select>
                         </div>
@@ -39,31 +41,31 @@
                             <label class="col-form-label col-form-label-lg">{% trans 'Indirizzo' %}:</label>
                             <input class="form-control form-control-lg" type="text" name="{{ form.address.html_name }}" 
                             {% if form.address.errors%}class="error" {% endif %} 
-                            {% if company.address %} value="{{ company.address }}" {% elif form.address.value %} value="{{ form.address.value }}" {% endif %}/>
+                            {% if customer.address %} value="{{ customer.address }}" {% elif form.address.value %} value="{{ form.address.value }}" {% endif %}/>
                         </div>
                         <div class="col-sm-6 form-group">
                             <label class="col-form-label col-form-label-lg">{% trans 'Numero Civico' %}:</label>
                             <input class="form-control form-control-lg" type="text" name="{{ form.address_number.html_name }}" 
                             {% if form.address_number.errors%}class="error" {% endif %} 
-                            {% if company.address_number %} value="{{ company.address_number }}" {% elif form.address_number.value %} value="{{ form.address_number.value }}" {% endif %}/>
+                            {% if customer.address_number %} value="{{ customer.address_number }}" {% elif form.address_number.value %} value="{{ form.address_number.value }}" {% endif %}/>
                         </div>
                         <div class="col-sm-6 form-group">
                             <label class="col-form-label col-form-label-lg">{% trans 'CAP' %}:</label>
                             <input class="form-control form-control-lg" type="text" name="{{ form.zip_code.html_name }}" 
                             {% if form.zip_code.errors%}class="error" {% endif %} 
-                            {% if company.zip_code %} value="{{ company.zip_code }}" {% elif form.zip_code.value %} value="{{ form.zip_code.value }}" {% endif %}/>
+                            {% if customer.zip_code %} value="{{ customer.zip_code }}" {% elif form.zip_code.value %} value="{{ form.zip_code.value }}" {% endif %}/>
                         </div>
                         <div class="col-sm-6 form-group">
                             <label class="col-form-label col-form-label-lg">{% trans 'Comune' %}:</label>
                             <input class="form-control form-control-lg" type="text" name="{{ form.city.html_name }}" 
                             {% if form.city.errors%}class="error" {% endif %} 
-                            {% if company.city %} value="{{ company.city }}" {% elif form.city.value %} value="{{ form.city.value }}" {% endif %}/>
+                            {% if customer.city %} value="{{ customer.city }}" {% elif form.city.value %} value="{{ form.city.value }}" {% endif %}/>
                         </div>
                         <div class="col-sm-6 form-group">
                             <label class="col-form-label col-form-label-lg">{% trans 'Provincia' %}:</label>
                             <select class="custom-select form-control-lg" name="{{ form.province.html_name }}">
                                 {% for item in provinces %}
-                                <option value="{{ item.1 }}" {% if company.province %}{% if company.province == item.1 %}selected=""{% endif %}{% endif %}>{{ item.2 }}</option>
+                                <option value="{{ item.1 }}" {% if customer.province %}{% if customer.province == item.1 %}selected=""{% endif %}{% endif %}>{{ item.2 }}</option>
                                 {% endfor %}
                             </select>
                         </div>
@@ -71,7 +73,7 @@
                             <label class="col-form-label col-form-label-lg">{% trans 'Nazione' %}:</label>
                             <select class="custom-select form-control-lg" name="{{ form.country.html_name }}">
                                 {% for item in countries %}
-                                <option value="{{ item.0 }}" {% if company.country %}{% if company.country == item.0 %}selected=""{% endif %}{% endif %}>{{ item.1 }}</option>
+                                <option value="{{ item.0 }}" {% if customer.country %}{% if customer.country == item.0 %}selected=""{% endif %}{% endif %}>{{ item.1 }}</option>
                                 {% endfor %}
                             </select>
                         </div>
@@ -79,25 +81,25 @@
                             <label class="col-form-label col-form-label-lg">{% trans 'Codice Fiscale' %}:</label>
                             <input class="form-control form-control-lg" type="text" name="{{ form.fiscal_code.html_name }}" 
                             {% if form.fiscal_code.errors%}class="error" {% endif %} 
-                            {% if company.fiscal_code %} value="{{ company.fiscal_code }}" {% elif form.fiscal_code.value %} value="{{ form.fiscal_code.value }}" {% endif %}/>
+                            {% if customer.fiscal_code %} value="{{ customer.fiscal_code }}" {% elif form.fiscal_code.value %} value="{{ form.fiscal_code.value }}" {% endif %}/>
                         </div>
                         <div class="col-sm-6 form-group">
                             <label class="col-form-label col-form-label-lg">{% trans 'Partita IVA' %}:</label>
                             <input class="form-control form-control-lg" type="text" name="{{ form.vat_code.html_name }}" 
                             {% if form.vat_code.errors%}class="error" {% endif %} 
-                            {% if company.vat_code %} value="{{ company.vat_code }}" {% elif form.vat_code.value %} value="{{ form.vat_code.value }}" {% endif %}/>
+                            {% if customer.vat_code %} value="{{ customer.vat_code }}" {% elif form.vat_code.value %} value="{{ form.vat_code.value }}" {% endif %}/>
                         </div>
                         <div class="col-sm-6 form-group">
                             <label class="col-form-label col-form-label-lg">{% trans 'Codice di Trasmissione' %}:</label>
                             <input class="form-control form-control-lg" type="text" name="{{ form.code.html_name }}" 
                             {% if form.code.errors%}class="error" {% endif %} 
-                            {% if company.code %} value="{{ company.code }}" {% elif form.code.value %} value="{{ form.code.value }}" {% endif %}/>
+                            {% if customer.code %} value="{{ customer.code }}" {% elif form.code.value %} value="{{ form.code.value }}" {% else %} value="0000000" {% endif %}/>
                         </div>
                         <div class="col-sm-6 form-group">
                             <label class="col-form-label col-form-label-lg">{% trans 'Indirizzo PEC' %}:</label>
                             <input class="form-control form-control-lg" type="text" name="{{ form.pec.html_name }}" 
                             {% if form.pec.errors%}class="error" {% endif %} 
-                            {% if company.pec %} value="{{ company.pec }}" {% elif form.pec.value %} value="{{ form.pec.value }}" {% endif %}/>
+                            {% if customer.pec %} value="{{ customer.pec }}" {% elif form.pec.value %} value="{{ form.pec.value }}" {% endif %}/>
                         </div>
 
 
@@ -119,7 +121,7 @@
             </div>
         </form>
 
-        {% if company %}
+        {% if customer %}
         <hr>
         <h2 class="mt-4">Fatture</h2>
 

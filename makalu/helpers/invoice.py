@@ -4,27 +4,27 @@ from django.template.loader import render_to_string
 from weasyprint import HTML
 from io import BytesIO
 
-from makalu.models import Invoice, InvoiceRow, Company
-from makalu.helpers.company import create_or_get_company, create_or_get_primary_company
-from makalu.helpers.user import create_or_get_user_from_code
+from makalu.models import Invoice, InvoiceRow, Customer
+from makalu.helpers.customer import create_or_get_customer
+from makalu.helpers.company import get_main_company, create_or_get_main_company
+from makalu.helpers.user import get_user_from_code
 
 def create_or_get_invoice(fatturapa):
-    create_or_get_primary_company(fatturapa)
-    company = create_or_get_company(fatturapa)
+    #create_or_get_main_company(fatturapa)
+    customer = create_or_get_customer(fatturapa)
     try:
-        invoice = Invoice.objects.get(commissioned=company, number=fatturapa['body']['datigenerali']['datigeneralidocumento']['numero'])
+        invoice = Invoice.objects.get(commissioned=customer, number=fatturapa['body']['datigenerali']['datigeneralidocumento']['numero'])
 
     except Invoice.DoesNotExist:
 
-        user = create_or_get_user_from_code(fatturapa['header']['datitrasmissione']['idcodice'])
+        user = get_user_from_code(fatturapa['header']['datitrasmissione']['idcodice'])
 
         invoice = Invoice.objects.create(
-            commissioned = company,
+            commissioned = customer,
             user = user,
             number = fatturapa['body']['datigenerali']['datigeneralidocumento']['numero'],
             date = timezone.datetime.strptime(fatturapa['body']['datigenerali']['datigeneralidocumento']['data'], '%Y-%m-%d').date(),
             currency = fatturapa['body']['datigenerali']['datigeneralidocumento']['divisa'],
-            tax_rate = fatturapa['body']['datiriepilogo']['aliquotaiva'],
             transmission_country = fatturapa['header']['datitrasmissione']['idpaese'],
             #transmission_code = fatturapa['header']['datitrasmissione']['idcodice'],
             transmission_progressive = fatturapa['header']['datitrasmissione']['progressivoinvio'],
@@ -79,9 +79,9 @@ def get_invoices():
 
     return invoices
 
-def get_invoices_by_company(company):
+def get_invoices_by_customer(customer):
     invoices = []
-    db_invoices = Invoice.objects.filter(commissioned=company).order_by('number')
+    db_invoices = Invoice.objects.filter(commissioned=customer).order_by('number')
     for db_invoice in db_invoices:
         invoices.append(get_invoice_data(db_invoice))
 
@@ -100,7 +100,7 @@ def get_invoice_from_uuid(uuid):
 
 def get_invoice_pdf(invoice):
     invoice_bytes = BytesIO()
-    invoice_html = render_to_string('makalu/invoice/print.html', { 'invoice': invoice, 'company': Company.objects.get(primary=True)})
+    invoice_html = render_to_string('makalu/invoice/print.html', { 'invoice': invoice, 'company': get_main_company()})
     html = HTML(string=invoice_html)
     html.write_pdf(invoice_bytes)
     return invoice_bytes

@@ -4,24 +4,40 @@ from django.db import models
 
 from uuid import uuid4
 
-class Company(models.Model):
+
+class Registry(models.Model):
     uuid = models.UUIDField(default=uuid4, editable=False)
-    name = models.CharField(max_length=250)
-    primary = models.BooleanField(default=False)
+    legal_name = models.CharField(max_length=250, blank=True, null=True)
+    first_name = models.CharField(max_length=100, blank=True, null=True)
+    last_name = models.CharField(max_length=100, blank=True, null=True)
     fiscal_type = models.CharField(max_length=50, default='RF01')
     address = models.CharField(max_length=250)
-    address_number = models.CharField(max_length=50)
+    address_number = models.CharField(max_length=60)
     zip_code = models.CharField(max_length=50)
     city = models.CharField(max_length=250)
     province = models.CharField(max_length=5)
     country = models.CharField(max_length=5)
     fiscal_code = models.CharField(max_length=25)
-    vat_code = models.CharField(max_length=25)
-    code = models.CharField(max_length=7, default='0000000')
+    vat_code = models.CharField(max_length=25, blank=True, null=True)
+    code = models.CharField(max_length=7)
     pec = models.EmailField(blank=True, null=True)
 
     class Meta:
             app_label = 'makalu'
+
+
+class Customer(Registry):
+    pass
+
+    class Meta:
+            app_label = 'makalu'
+
+class Company(Registry):
+    is_active = models.BooleanField(default=False)
+
+    class Meta:
+            app_label = 'makalu'
+    
 
 
 '''
@@ -37,7 +53,7 @@ class Invoice(models.Model):
     uuid = models.UUIDField(default=uuid4, editable=False)
     status = models.IntegerField(default=1)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    commissioned = models.ForeignKey(Company, on_delete=models.CASCADE, blank=True, null=True)
+    commissioned = models.ForeignKey(Customer, on_delete=models.CASCADE, blank=True, null=True)
     number = models.CharField(max_length=25, blank=True, null=True)
     invoice_type = models.CharField(max_length=50, default='TD01')
     date = models.DateField()

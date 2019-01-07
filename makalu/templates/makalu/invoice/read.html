@@ -2,16 +2,6 @@
 {% load i18n %}
 {% block content %}
 <div class="row">
-    {% if messages %}
-    <div class="col-lg-12 mt-4">
-        {% for message in messages %}
-        <div class="alert alert-dismissible alert-{{ message.tags }}">
-            <button type="button" class="close" data-dismiss="alert">&times;</button>
-            <p class="mb-0">{{ message }}</p>
-        </div>
-        {% endfor %}
-    </div>
-    {% endif %}
     <div class="col-lg-12">
         <h1 class="mt-4 mb-4">
             Fattura {{ invoice.number }}
@@ -34,11 +24,11 @@
                             <td><i class="fas fa-circle {% if invoice.status == 0 %}text-success{% else %}text-warning{% endif %}"></i> {% if invoice.status == 0 %}Trasmessa{% else %}Da trasmettere{% endif %}</td>
                             <td>{{ invoice.date }}</td>
                             <td>
-                                <a href="{% url 'makalu:user-read' invoice.user.username %}">
+                                <a href="{% url 'makalu:user-read' invoice.user.email %}">
                                     {% if invoice.user.first_name %}
                                         {{ invoice.user.first_name }} {{ invoice.user.last_name }}
                                     {% else %}
-                                        {{ invoice.user.fiscal_code }} ({{ invoice.user.username }})
+                                        {{ invoice.user.fiscal_code }} ({{ invoice.user.email }})
                                     {% endif %}
                                 </a>
                             </td>
@@ -50,6 +40,7 @@
                                 {% endif %}
                             </td>
                             <td>
+                                <a href="{% url 'makalu:invoice-xml' invoice.uuid %}"><i class="fas fa-file-alt"></i></a>
                                 <a href="{% url 'makalu:invoice-print' invoice.uuid %}"><i class="fas fa-file-pdf"></i></a>
                             </td>
                         </tr>
@@ -82,14 +73,14 @@
                     <div class="form-group">
                         <div class="row">
                             <div class="col-lg-10 py-2">
-                                <select class="custom-select form-control-lg" {% if invoice.status  == 0 %}disabled{% endif %} name="{{ form.company.html_name }}">
+                                <select class="custom-select form-control-lg" {% if invoice.status  == 0 %}disabled{% endif %} name="{{ form.customer.html_name }}">
                                     {% for item in customers %}
-                                    <option value="{{ item.uuid }}" {% if invoice.commissioned.uuid == item.uuid %}selected=""{% endif %}>{{ item.name }}</option>
+                                    <option value="{{ item.uuid }}" {% if invoice.commissioned.uuid == item.uuid %}selected=""{% endif %}>{% if item.legal_name %}{{ item.legal_name }}{% else %}{{ item.first_name }} {{ item.last_name }}{% endif %}</option>
                                     {% endfor %}
                                 </select>
                             </div>
                             <div class="col-lg-2 py-2">
-                                <a class="btn btn-secondary btn-lg text-white {% if invoice.status == 0 %}disabled{% endif %}" href="{% url 'makalu:company-create' %}">Nuovo Cliente</a>
+                                <a class="btn btn-secondary btn-lg text-white {% if invoice.status == 0 %}disabled{% endif %}" href="{% url 'makalu:customer-create' %}">Nuovo Cliente</a>
                             </div>
                         </div>
                     </div>      

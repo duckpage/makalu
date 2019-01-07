@@ -1,13 +1,13 @@
 from django.urls import path, include
 
-from makalu.views import invoice, company, user
+from makalu.views import invoice, customer, user
 
 app_name = 'makalu'
 
 urlpatterns = [
-    path('', invoice.dashboard, name='dashboard'),
-
+    
     path('invoices/', include([
+        path('', invoice.dashboard, name='dashboard'),
         path('upload', invoice.invoice_upload, name='invoice-upload'),
         path('transmit', invoice.invoice_transmit, name='invoice-transmit'),
         path('create', invoice.invoice_create, name='invoice-create'),
@@ -16,14 +16,13 @@ urlpatterns = [
         path('<uuid:uuid>/article/delete', invoice.invoice_row_delete, name='invoice-row-delete'),
         path('<uuid:uuid>/xml', invoice.invoice_xml, name='invoice-xml'),
         path('<uuid:uuid>/print', invoice.invoice_print, name='invoice-print'),
-        
     ])),
 
     path('customers/', include([
-        path('', company.company_list, name='company-list'),
-        path('delete', company.company_delete, name='company-delete'),
-        path('create', company.company_read, name='company-create'),
-        path('<uuid:uuid>', company.company_read, name='company-read'),
+        path('', customer.customer_list, name='customer-list'),
+        path('delete', customer.customer_delete, name='customer-delete'),
+        path('create', customer.customer_read, name='customer-create'),
+        path('<uuid:uuid>', customer.customer_read, name='customer-read'),
     ])),
 
     path('users/', include([

@@ -125,7 +125,7 @@
                     <table>
                         <tr>
                             <td>
-                                {{ company.name }}<br>
+                                {{ company.legal_name }}<br>
                                 {{ company.address }} {{ company.address_number }}<br>
                                 {{ company.city }}<br>
                                 {{ company.province }}<br>
@@ -133,7 +133,7 @@
                             </td>
                             
                             <td>
-                                {{ invoice.commissioned.name }}<br>
+                                {% if invoice.commissioned.legal_name %}{{ invoice.commissioned.legal_name }}{% else %}{{ invoice.commissioned.first_name }} {{ invoice.commissioned.last_name }}{% endif %}<br>
                                 {{ invoice.commissioned.address }} {{ invoice.commissioned.address_number }}<br>
                                 {{ invoice.commissioned.city }}<br>
                                 {{ invoice.commissioned.province }}<br>

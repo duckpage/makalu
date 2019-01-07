@@ -4,7 +4,8 @@ from base64 import b64decode
 #from signxml import XMLVerifier
 import xml.etree.ElementTree as ET
 
-from makalu.models import Company
+from makalu.models import Customer
+from makalu.helpers.company import get_main_company
 
 '''
 RF = ('RF01', 'RF02', 'RF03', 'RF04', 'RF05', 'RF06', 'RF07', 'RF08', 'RF09', 'RF10',
@@ -38,41 +39,41 @@ def float_to_str(number):
 #    assertion_data = XMLVerifier().verify(b64decode(assertion_body), x509_cert=cert).signed_xml
 
 
-def get_company_data(element, fattura, primary=False):
+def get_customer_data(element, fattura, primary=False):
 
-    company = 'cessionariocommittente'
+    customer = 'cessionariocommittente'
     if primary:
-        company = 'cedenteprestatore'
+        customer = 'cedenteprestatore'
 
     datianagrafici = element.find('DatiAnagrafici')
     if len(datianagrafici):
         id_fiscaleiva = datianagrafici.find('IdFiscaleIVA')
         if len(id_fiscaleiva):
-            fattura['header'][company]['idfiscaleiva']['idpaese'] = id_fiscaleiva.find('IdPaese').text
-            fattura['header'][company]['idfiscaleiva']['idcodice'] = id_fiscaleiva.find('IdCodice').text
+            fattura['header'][customer]['idfiscaleiva']['idpaese'] = id_fiscaleiva.find('IdPaese').text
+            fattura['header'][customer]['idfiscaleiva']['idcodice'] = id_fiscaleiva.find('IdCodice').text
             
 
         if primary:
-            fattura['header'][company]['codicefiscale'] = datianagrafici.find('CodiceFiscale').text
-            fattura['header'][company]['regimefiscale'] = datianagrafici.find('RegimeFiscale').text
+            fattura['header'][customer]['codicefiscale'] = datianagrafici.find('CodiceFiscale').text
+            fattura['header'][customer]['regimefiscale'] = datianagrafici.find('RegimeFiscale').text
         
 
         anagrafica = datianagrafici.find('Anagrafica')
         if len(anagrafica):
-            fattura['header'][company]['anagrafica']['denominazione'] = anagrafica.find('Denominazione').text
+            fattura['header'][customer]['anagrafica']['denominazione'] = anagrafica.find('Denominazione').text
             
 
     sede = element.find('Sede')
     if sede:
-        fattura['header'][company]['sede']['indirizzo'] = sede.find('Indirizzo').text
+        fattura['header'][customer]['sede']['indirizzo'] = sede.find('Indirizzo').text
         if sede.find('NumeroCivico'):
-            fattura['header'][company]['sede']['numerocivico'] = sede.find('NumeroCivico').text
+            fattura['header'][customer]['sede']['numerocivico'] = sede.find('NumeroCivico').text
         else:
-            fattura['header'][company]['sede']['numerocivico'] = ''
-        fattura['header'][company]['sede']['cap'] = sede.find('CAP').text
-        fattura['header'][company]['sede']['comune'] = sede.find('Comune').text  
-        fattura['header'][company]['sede']['provincia'] = sede.find('Provincia').text
-        fattura['header'][company]['sede']['nazione'] = sede.find('Nazione').text
+            fattura['header'][customer]['sede']['numerocivico'] = ''
+        fattura['header'][customer]['sede']['cap'] = sede.find('CAP').text
+        fattura['header'][customer]['sede']['comune'] = sede.find('Comune').text  
+        fattura['header'][customer]['sede']['provincia'] = sede.find('Provincia').text
+        fattura['header'][customer]['sede']['nazione'] = sede.find('Nazione').text
 
 
 def elaborate_xml(xmlfile):
@@ -96,18 +97,19 @@ def elaborate_xml(xmlfile):
             fattura['header']['datitrasmissione']['progressivoinvio'] = datitrasmissione.find('ProgressivoInvio').text
             fattura['header']['datitrasmissione']['formatotrasmissione'] =  datitrasmissione.find('FormatoTrasmissione').text
             fattura['header']['datitrasmissione']['codicedestinatario'] = datitrasmissione.find('CodiceDestinatario').text
-            fattura['header']['datitrasmissione']['pecdestinatario'] = datitrasmissione.find('PECDestinatario').text
+            if datitrasmissione.find('PECDestinatario'):
+                fattura['header']['datitrasmissione']['pecdestinatario'] = datitrasmissione.find('PECDestinatario').text
 
         
 
         cedenteprestatore = fatturaheader.find('CedentePrestatore')
         if len(cedenteprestatore):
-            get_company_data(cedenteprestatore, fattura, True)
+            get_customer_data(cedenteprestatore, fattura, True)
             
 
         cessionariocommittente = fatturaheader.find('CessionarioCommittente')
         if len(cessionariocommittente):
-            get_company_data(cessionariocommittente, fattura)
+            get_customer_data(cessionariocommittente, fattura)
 
     # END HEADER
 
@@ -168,7 +170,7 @@ def get_fatturapa_xml(fattura):
     ET.SubElement(datitrasmissione, 'PECDestinatario').text = fattura['commissioned'].pec
 
 
-    company = Company.objects.get(primary=True)
+    company = get_main_company()
     cedenteprestatore = ET.SubElement(header, 'CedentePrestatore')
     cedentedatianagrafici = ET.SubElement(cedenteprestatore, 'DatiAnagrafici')
     cedenteidfiscaleiva = ET.SubElement(cedentedatianagrafici, 'IdFiscaleIVA')
@@ -179,7 +181,7 @@ def get_fatturapa_xml(fattura):
     ET.SubElement(cedentedatianagrafici, 'CodiceFiscale').text = company.fiscal_code
     ET.SubElement(cedentedatianagrafici, 'RegimeFiscale').text = company.fiscal_type
     cedenteanagrafica = ET.SubElement(cedentedatianagrafici, 'Anagrafica')
-    ET.SubElement(cedenteanagrafica, 'Denominazione').text = company.name
+    ET.SubElement(cedenteanagrafica, 'Denominazione').text = company.legal_name
 
     cedentesede = ET.SubElement(cedenteprestatore, 'Sede')
     ET.SubElement(cedentesede, 'Indirizzo').text = company.address
@@ -192,15 +194,22 @@ def get_fatturapa_xml(fattura):
 
     cessionariocommittente = ET.SubElement(header, 'CessionarioCommittente')
     cessionariodatianagrafici = ET.SubElement(cessionariocommittente, 'DatiAnagrafici')
-    cessionarioidfiscaleiva = ET.SubElement(cessionariodatianagrafici, 'IdFiscaleIVA')
 
-    ET.SubElement(cessionarioidfiscaleiva, 'IdPaese').text = fattura['commissioned'].country
-    ET.SubElement(cessionarioidfiscaleiva, 'IdCodice').text = fattura['commissioned'].vat_code
 
-    #ET.SubElement(cedentedatianagrafici, 'CodiceFiscale').text = company.fiscal_code
-    
+    ET.SubElement(cessionariodatianagrafici, 'CodiceFiscale').text = fattura['commissioned'].fiscal_code
+
+    if fattura['commissioned'].vat_code:
+        cessionarioidfiscaleiva = ET.SubElement(cessionariodatianagrafici, 'IdFiscaleIVA')
+        ET.SubElement(cessionarioidfiscaleiva, 'IdPaese').text = fattura['commissioned'].country
+        ET.SubElement(cessionarioidfiscaleiva, 'IdCodice').text = fattura['commissioned'].vat_code
+
+
     cessionarioanagrafica = ET.SubElement(cessionariodatianagrafici, 'Anagrafica')
-    ET.SubElement(cessionarioanagrafica, 'Denominazione').text = fattura['commissioned'].name
+    if fattura['commissioned'].vat_code:
+        ET.SubElement(cessionarioanagrafica, 'Denominazione').text = fattura['commissioned'].legal_name
+    else:
+        ET.SubElement(cessionarioanagrafica, 'Nome').text = fattura['commissioned'].first_name
+        ET.SubElement(cessionarioanagrafica, 'Cognome').text = fattura['commissioned'].last_name
 
     cessionariosede = ET.SubElement(cessionariocommittente, 'Sede')
     ET.SubElement(cessionariosede, 'Indirizzo').text = fattura['commissioned'].address
@@ -219,7 +228,7 @@ def get_fatturapa_xml(fattura):
     ET.SubElement(datigeneralidocumento, 'Divisa').text = fattura['currency']
     ET.SubElement(datigeneralidocumento, 'Data').text = fattura['date'].strftime('%Y-%m-%d')
     ET.SubElement(datigeneralidocumento, 'Numero').text = str(fattura['number'])
-    ET.SubElement(datigeneralidocumento, 'ImportoTotaleDocumento').text = float_to_str(fattura['total'] + (fattura['tax_rate'] * fattura['total']) / 100)
+    
 
     riepilogo = []
     datibeniservizi = ET.SubElement(body, 'DatiBeniServizi')
@@ -227,7 +236,7 @@ def get_fatturapa_xml(fattura):
         dettagliolinee = ET.SubElement(datibeniservizi, 'DettaglioLinee')
         ET.SubElement(dettagliolinee, 'NumeroLinea').text = str(item.number)
         ET.SubElement(dettagliolinee, 'Descrizione').text = item.description
-        ET.SubElement(dettagliolinee, 'Quantita').text = str(item.quantity)
+        ET.SubElement(dettagliolinee, 'Quantita').text = float_to_str(item.quantity)
         ET.SubElement(dettagliolinee, 'PrezzoUnitario').text = float_to_str(item.unit_price)
         ET.SubElement(dettagliolinee, 'PrezzoTotale').text = float_to_str(item.total_price)
         ET.SubElement(dettagliolinee, 'AliquotaIVA').text = float_to_str(item.tax_rate)
@@ -245,7 +254,7 @@ def get_fatturapa_xml(fattura):
                 'to': item.total_price,
                 'tx': item.tax_rate
             })
-    
+
     rtotal = 0
     for ritem in riepilogo:
         datiriepilogo = ET.SubElement(datibeniservizi, 'DatiRiepilogo')

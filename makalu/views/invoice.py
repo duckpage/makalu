@@ -7,13 +7,12 @@ from django.contrib import messages
 from django.urls import reverse
 from django.utils import timezone
 
-from makalu.models import Invoice
+from makalu.models import Invoice, Customer
 from makalu.forms.invoice import InvocieRowForm, InvocieForm
 from makalu.helpers.fatturapa import elaborate_xml, get_fatturapa_xml
 from makalu.helpers.invoice import *
-from makalu.helpers.company import get_company_from_uuid
-
-
+from makalu.helpers.customer import get_customer_from_uuid
+from makalu.helpers.company import get_main_company
 
 @login_required
 def dashboard(request):
@@ -32,13 +31,13 @@ def invoice_read(request, uuid):
             if form.is_valid():
                 number = form.cleaned_data['number']
                 date = form.cleaned_data['date']
-                company_uuid = form.cleaned_data['company']
+                customer_uuid = form.cleaned_data['customer']
                 
-                company = get_company_from_uuid(company_uuid)
-                if company:
+                customer = get_customer_from_uuid(customer_uuid)
+                if customer:
                     invoice['model'].number = number
                     invoice['model'].date = date
-                    invoice['model'].commissioned = company
+                    invoice['model'].commissioned = customer
                     invoice['model'].save()
 
                     messages.success(request, _('Fattura aggiornata con successo.'))
@@ -93,9 +92,10 @@ def invoice_xml(request, uuid):
     if invoice:
         stream = get_fatturapa_xml(invoice)
 
+        customer = get_main_company()
 
         response = HttpResponse(stream.getvalue(), content_type='application/xml')
-        response['Content-Disposition'] = 'attachment; filename="invoice.xml"'
+        response['Content-Disposition'] = 'attachment; filename="IT{}_{}.xml"'.format(customer.vat_code, invoice['number'])
         response['content-length'] = stream.tell()
         return response
     else:
@@ -109,8 +109,11 @@ def invoice_print(request, uuid):
     invoice = get_invoice_from_uuid(uuid)
     if invoice:
         stream = get_invoice_pdf(invoice)
+
+        customer = get_main_company()
+
         response = HttpResponse(stream.getvalue(), content_type='application/pdf')
-        response['Content-Disposition'] = 'attachment; filename="{}.pdf"'.format(invoice['uuid'])
+        response['Content-Disposition'] = 'attachment; filename="IT{}_{}.pdf"'.format(customer.vat_code, invoice['number'])
         response['content-length'] = stream.tell()
         return response
 
@@ -157,7 +160,7 @@ def invoice_row_create(request, uuid):
                     quantity=quantity,
                     unit_price=unit_price,
                     tax_rate=taxrate,
-                    total_price= unit_price + ((unit_price * taxrate) / 100) 
+                    total_price= unit_price * quantity
                 )
 
                 messages.success(request, _('Articolo aggiunto con successo.'))

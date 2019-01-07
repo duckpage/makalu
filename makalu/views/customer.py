@@ -6,33 +6,35 @@ from django.contrib import messages
 from django.urls import reverse
 
 from makalu.fixtures.default import FISCAL_TYPE, COUNTRIES, PROVINCES
-from makalu.models import Company
+from makalu.models import Customer
 
-from makalu.forms.company import CompanyForm
+from makalu.forms.customer import CustomerForm
 
 from makalu.helpers.fatturapa import elaborate_xml, get_fatturapa_xml
-from makalu.helpers.company import get_company_from_uuid
-from makalu.helpers.invoice import get_invoices_by_company
+from makalu.helpers.customer import get_customer_from_uuid
+from makalu.helpers.invoice import get_invoices_by_customer
 
 
 @login_required
-def company_list(request):
-    return render(request, 'makalu/company/list.html',{
-        'companies': Company.objects.filter(primary=False).order_by('name')
+def customer_list(request):
+    return render(request, 'makalu/customer/list.html',{
+        'customers': Customer.objects.all()
     })
 
 
 @login_required
-def company_read(request, uuid=None):
-    form = CompanyForm()
-    company = get_company_from_uuid(uuid)    
-    if company:
+def customer_read(request, uuid=None):
+    form = CustomerForm()
+    customer = get_customer_from_uuid(uuid)    
+    if customer:
         pass
     
     if request.method == 'POST':
-        form = CompanyForm(request.POST)
+        form = CustomerForm(request.POST)
         if form.is_valid():
-            name = form.cleaned_data['name']
+            legal_name = form.cleaned_data['legal_name']
+            first_name = form.cleaned_data['first_name']
+            last_name = form.cleaned_data['last_name']
             fiscal_type = form.cleaned_data['fiscal_type']
             address = form.cleaned_data['address']
             address_number = form.cleaned_data['address_number']
@@ -45,28 +47,32 @@ def company_read(request, uuid=None):
             code = form.cleaned_data['code']
             pec = form.cleaned_data['pec']
 
-            if company:
-                company.name = name
-                company.fiscal_type = fiscal_type
-                company.address = address
-                company.address_number = address_number
-                company.zip_code = zip_code
-                company.city = city
-                company.province = province
-                company.country = country
-                company.fiscal_code = fiscal_code
-                company.vat_code = vat_code
-                company.code = code
-                company.pec = pec
+            if customer:
+                customer.fiscal_type = fiscal_type
+                customer.address = address
+                customer.address_number = address_number
+                customer.zip_code = zip_code
+                customer.city = city
+                customer.province = province
+                customer.country = country
+                customer.fiscal_code = fiscal_code
+                customer.vat_code = vat_code
+                customer.code = code
+                customer.pec = pec
 
-                company.save()
+                if legal_name:
+                    customer.legal_name = legal_name
+                if first_name:
+                    customer.first_name = first_name
+                    customer.last_name = last_name
+
+                customer.save()
 
                 messages.success(request, _('Cliente aggiornato con successo.'))
 
-                return HttpResponseRedirect(reverse('makalu:company-list'))
+                return HttpResponseRedirect(reverse('makalu:customer-list'))
             else:
-                company = Company.objects.create(
-                    name=name,
+                customer = Customer.objects.create(
                     fiscal_type=fiscal_type,
                     address=address,
                     address_number=address_number,
@@ -75,22 +81,33 @@ def company_read(request, uuid=None):
                     province=province,
                     country=country,
                     fiscal_code=fiscal_code,
-                    vat_code=vat_code,
                     code=code,
-                    pec=pec
                 )
 
+                if legal_name:
+                    customer.legal_name = legal_name
+                if first_name:
+                    customerfirst_name = first_name
+                    customer.last_name = last_name
+
+                if vat_code:
+                    customer.vat_code = vat_code
+                if pec:
+                    customer.pec = pec
+
+                customer.save()
+
                 messages.success(request, _('Cliente creato con successo.'))
-                return HttpResponseRedirect(reverse('makalu:company-list'))
+                return HttpResponseRedirect(reverse('makalu:customer-list'))
         else:
             messages.warning(request, _('Non sono stati compilati tutti i campi obblgatori'))
 
 
 
-    return render(request, 'makalu/company/read.html',{
+    return render(request, 'makalu/customer/read.html',{
         'form': form,
-        'company': company,
-        'invoices': get_invoices_by_company(company),
+        'customer': customer,
+        'invoices': get_invoices_by_customer(customer),
         'fiscaltypes': FISCAL_TYPE,
         'countries': COUNTRIES,
         'provinces': PROVINCES
@@ -98,7 +115,7 @@ def company_read(request, uuid=None):
 
 
 @login_required
-def company_delete(request):
+def customer_delete(request):
     error = None
     if request.method == 'POST':
         try:
@@ -106,12 +123,12 @@ def company_delete(request):
             redirect = request.POST.get('redirect', None)
             if uuid:
                 
-                company = get_company_from_uuid(uuid)
-                if company:
+                customer = get_customer_from_uuid(uuid)
+                if customer:
 
-                    invoices = get_invoices_by_company(company)
+                    invoices = get_invoices_by_customer(customer)
                     if not invoices:
-                        company.delete()
+                        customer.delete()
 
                         return JsonResponse({
                             'status': 0,
