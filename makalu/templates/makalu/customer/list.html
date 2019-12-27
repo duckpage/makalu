@@ -1,0 +1,71 @@
+ {% extends 'makalu-base.html' %} 
+ {% load i18n %}
+ 
+ {% block content %}
+<div class="row">
+    <div class="col-lg-12 mt-4">
+        <h1>Clienti</h1>
+    </div>
+    <div class="col-lg-10">
+        <table class="table">
+            <thead class="thead-dark">
+                <tr>
+                    <th scope="col">
+                        {% trans "Nome" %}
+                    </th>
+                    <th scope="col">
+                        
+                    </th>
+                    <th scope="col">
+                        
+                    </th>
+                    <th scope="col"></th>
+                    <th scope="col"></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for customer in customers %}
+                <tr class="dynamic__item" data-code="{{ customer.uuid }}" data-type="companies">
+                    <td>
+                        {% if customer.legal_name %}
+                            {{ customer.legal_name }} 
+                        {% else %}
+                            {{ customer.first_name }} {{ customer.last_name }}
+                        {% endif %}
+                    </td>
+                    <td>
+                        
+                    </td>
+                    <td>
+                        
+                    </td>
+                    <td>
+                        <a class="" href="{% url 'makalu:customer-read' customer.uuid %}">
+                            <small>
+                                {% trans "Dettagli" %}
+                            </small>
+                        </a>
+                    </td>
+                    <td>
+                        
+                        <a class="" data-toggle="modal" data-target="#modal-delete" data-message="{% trans 'Sei sicuro di voler eliminare' %} {% if customer.legal_name %}{{ customer.legal_name }}{% else %}{{ customer.first_name }} {{ customer.last_name }}{% endif %}?"
+                            data-url="{% url 'makalu:customer-delete' %}" data-code="{{ customer.uuid }}">
+                            <small>
+                                {% trans "Elimina" %}
+                            </small>
+                        </a>
+                        
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div class="col-lg-2">
+        <a class="btn btn-primary btn-lg text-white" href="{% url 'makalu:customer-create' %}">{% trans 'Aggiungi Cliente' %}</a>
+    </div>
+</div>
+
+{% include 'makalu/snippets/modal-delete.html' %}
+
+{% endblock %}

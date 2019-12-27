@@ -1,0 +1,42 @@
+/*!
+ * Start Bootstrap - Blog Post (https://startbootstrap.com/template-overviews/blog-post)
+ * Copyright 2013-2017 Start Bootstrap
+ * Licensed under MIT (https://github.com/BlackrockDigital/startbootstrap-blog-post/blob/master/LICENSE)
+ */
+
+body {
+  padding-top: 54px;
+}
+
+@media (min-width: 992px) {
+  body {
+    padding-top: 56px;
+  }
+}
+
+.container.content {
+  padding: 100px 0;
+}
+.password-info-box ul {
+  list-style: none;
+  padding:0;
+}
+
+.password-info-box ul li::before{
+  content: "";
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-right: 10px;
+  border-radius: 8px;
+  background: #52bad5;
+}
+
+.password-info-box ul li.valid{
+  color:#d0d0d0;
+}
+
+.password-info-box ul li.valid::before{
+  background:#d0d0d0;
+}
+

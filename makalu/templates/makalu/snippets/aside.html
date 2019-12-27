@@ -1,0 +1,21 @@
+{% load makalu %}
+<div class="col-md-4">
+
+    <div class="my-4">
+        <form action="{% url 'makalu:invoice-create' %}" method="POST">{% csrf_token %}
+            <div class="btn-group float-right" role="group">
+                <button type="submit" class="btn btn-outline-primary"><i class="fas fa-file-alt fa-2x"></i><br>Nuova Fattura</button>
+                <a class="btn btn-outline-primary" href="" data-toggle="modal" data-target="#modal-upload"><i class="fas fa-upload fa-2x"></i><br>Carica XML</a>
+                <a class="btn btn-outline-primary" href="{% url 'makalu:customer-create' %}"><i class="fas fa-building fa-2x"></i><br>Nuovo Cliente</a>
+            </div>
+        </form>
+    </div>
+<div class="clearfix"></div>
+
+    <div class="card my-4">
+        <h5 class="card-header">Informaizoni Generali</h5>
+        <div class="card-body">
+            <p><strong>Fatturato:</strong> {{ maintotal|currency }}</p>
+        </div>
+    </div>
+</div>
