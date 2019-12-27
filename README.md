@@ -4,7 +4,7 @@ Below is a quick summary of usage.
 
 Releases:
 ============
-<<<<<<< HEAD
+
 Add the folder ``makalu`` to your django project.
 
 Add ``makalu`` to your ``INSTALLED_APPS`` setting:
@@ -35,4 +35,4 @@ Add ``LOGIN_REDIRECT_URL = '/'`` and ``LOGOUT_REDIRECT_URL = '/'`` to settings.p
 Release 1
 ================
 See branch release/1
->>>>>>> master
+
