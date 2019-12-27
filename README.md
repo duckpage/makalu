@@ -2,7 +2,7 @@
 A powerful, yet easy to implement italian einvoice application for Django 2.0+
 Below is a quick summary of usage.
 
-Releases:
+How to install:
 ============
 
 Add the folder ``makalu`` to your django project.
@@ -30,9 +30,3 @@ Add ``path('accounts/', include('django.contrib.auth.urls')),`` in to urls.py.
 
 Add ``LOGIN_REDIRECT_URL = '/'`` and ``LOGOUT_REDIRECT_URL = '/'`` to settings.py
  
-=======
-
-Release 1
-================
-See branch release/1
-
